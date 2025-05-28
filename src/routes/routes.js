@@ -49,7 +49,13 @@ router.post("/", async (req, res) => {
             email,
             password: encryptedPassword,
         })
-        res.json(newUserDoc);
+
+        const { _id } = newUserDoc;
+        const newUserObj = { name, email, _id }
+
+        const token = jwt.sign(newUserObj, JWT_PRIVATE_KEY)
+        res.cookie("token", token).json(newUserObj)
+        
     } catch (error) {
         res.status(500).json(error);
     }
@@ -65,8 +71,8 @@ router.post("/login", async (req, res) => {
         
         if (userDoc) {
             const passwordCorrect = bcrypt.compareSync(password, userDoc.password)
+           
             if (passwordCorrect) {
-                
                 const newUserObj = {_id, name, email}
                 const token = jwt.sign(newUserObj, JWT_PRIVATE_KEY)
 
