@@ -25,16 +25,13 @@ router.get('/profile', async (req, res) => {
     const { token } = req.cookies;
 
     if (token) {
-        try {
-            const userInfo = jwt.verify(token, JWT_PRIVATE_KEY)
-            res.json(userInfo)
-        } catch (error) {
-            res.status(500).json(error);
-        }
+        jwt.verify(token, JWT_PRIVATE_KEY, {}, (error, userInfo) =>{
+            if (error) throw error;
+                res.json(userInfo)
+        });
     } else {
         res.json(null)
-    }
-    
+    }  
 })
 
 router.post("/", async (req, res) => {
@@ -53,11 +50,14 @@ router.post("/", async (req, res) => {
         const { _id } = newUserDoc;
         const newUserObj = { name, email, _id }
 
-        const token = jwt.sign(newUserObj, JWT_PRIVATE_KEY)
-        res.cookie("token", token).json(newUserObj)
-        
+        jwt.sign(newUserObj, JWT_PRIVATE_KEY, {}, (error, token) => {
+            if(error) throw error;
+            res.cookie("token", token).json(newUserObj)
+        });
+
     } catch (error) {
         res.status(500).json(error);
+        throw error;
     }
 })
 router.post("/login", async (req, res) => {
